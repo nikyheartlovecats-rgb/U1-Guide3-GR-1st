@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Study Guide - Colegio Montano</title>
+    <style>
+        :root {
+            --primary-blue: #1269A8;
+            --bright-yellow: #F7D615;
+            --grayish-green: #54887D;
+            --light-blue: #88B5C7;
+            --light-olive: #A6B046;
+            --soft-white: #F2F5E9;
+            --dark-text: #2C3E50;
+            --white: #FFFFFF;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #e4ecef;
+            color: var(--dark-text);
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* Blackboard Framework Canvas */
+        .board-container {
+            width: 100%;
+            max-width: 1200px;
+            background-color: var(--soft-white);
+            border: 8px solid var(--bright-yellow);
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header / Navigation bar */
+        .board-header {
+            background-color: var(--primary-blue);
+            color: var(--white);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 4px solid var(--bright-yellow);
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header-brand img {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 2px solid var(--bright-yellow);
+            background: white;
+        }
+
+        .header-titles h1 {
+            font-size: 1.4rem;
+            font-weight: bold;
+        }
+
+        .header-titles p {
+            font-size: 0.9rem;
+            color: #d1e7f0;
+        }
+
+        .fullscreen-btn {
+            background-color: var(--bright-yellow);
+            color: var(--dark-text);
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .fullscreen-btn:hover {
+            background-color: #f3cf0d;
+            transform: scale(1.05);
+        }
+
+        /* Horizontal Interactive Tabs */
+        .tabs-nav {
+            display: flex;
+            background-color: var(--grayish-green);
+            overflow-x: auto;
+            border-bottom: 3px solid var(--light-olive);
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            color: var(--white);
+            padding: 12px 20px;
+            font-weight: bold;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: background 0.3s;
+            white-space: nowrap;
+            border-right: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .tab-btn:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .tab-btn.active {
+            background-color: var(--primary-blue);
+            border-bottom: 4px solid var(--bright-yellow);
+        }
+
+        /* Content Area */
+        .board-content {
+            padding: 25px;
+            max-height: 70vh;
+            overflow-y: auto;
+            background-color: var(--soft-white);
+        }
+
+        .tab-pane {
+            display: none;
+        }
+
+        .tab-pane.active {
+            display: block;
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Section Typography & Cards */
+        h2.section-title {
+            color: var(--primary-blue);
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+            border-left: 5px solid var(--light-olive);
+            padding-left: 10px;
+        }
+
+        p.section-intro {
+            margin-bottom: 20px;
+            font-size: 1.05rem;
+        }
+
+        .level-badge {
+            display: inline-block;
+            background-color: var(--light-olive);
+            color: var(--white);
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .card {
+            background-color: var(--light-blue);
+            border: 2px solid var(--grayish-green);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.05);
+        }
+
+        .card h3 {
+            color: var(--primary-blue);
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+
+        .card p {
+            color: var(--dark-text);
+            margin-bottom: 10px;
+        }
+
+        /* Collapsible Solution Container */
+        .solution-container {
+            margin-top: 10px;
+        }
+
+        .toggle-solution-btn {
+            background-color: var(--grayish-green);
+            color: var(--white);
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+
+        .toggle-solution-btn:hover {
+            background-color: #3e665d;
+        }
+
+        .solution-box {
+            display: none;
+            background-color: var(--white);
+            border-left: 4px solid var(--light-olive);
+            padding: 10px;
+            margin-top: 8px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .solution-box.show {
+            display: block;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .board-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .fullscreen-btn {
+                align-self: flex-end;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="board-container" id="boardContainer">
+    <!-- Header with Institution Identity -->
+    <div class="board-header">
+        <div class="header-brand">
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQyEop0yf6lZ7Jk9MILZxF1rBj4Oqs5esyhIQ&s" alt="Colegio Montano Logo">
+            <div class="header-titles">
+                <h1>Colegio Montano - Digital Whiteboard</h1>
+                <p>Grade 1 | Our World 1: Unit 3 Grammar (Family & Questions)</p>
+            </div>
+        </div>
+        <button class="fullscreen-btn" onclick="toggleFullScreen()">[ ⛶ Fullscreen ]</button>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="tabs-nav">
+        <button class="tab-btn active" onclick="switchTab(event, 'theory')">1. Theory</button>
+        <button class="tab-btn" onclick="switchTab(event, 'examples')">2. Examples</button>
+        <button class="tab-btn" onclick="switchTab(event, 'exercises')">3. Exercises</button>
+        <button class="tab-btn" onclick="switchTab(event, 'reflection')">4. Reflection</button>
+        <button class="tab-btn" onclick="switchTab(event, 'evaluation')">5. Formative Eval</button>
+    </div>
+
+    <!-- Content Workspace -->
+    <div class="board-content">
+
+        <!-- TAB 1: THEORY -->
+        <div id="theory" class="tab-pane active">
+            <h2 class="section-title">Theoretical Explanation: Family, Have, and Who's</h2>
+            <p class="section-intro">Welcome to Unit 3! Today we are learning how to talk about our family members, count them, and ask who people are using English.</p>
+            
+            <div class="card">
+                <h3>Part A: The Verb "To Have" (Grammar I)</h3>
+                <p>We use <strong>have</strong> and <strong>don't have</strong> (do not) to talk about our family members and siblings.</p>
+                <ul style="margin-left: 20px; line-height: 1.6;">
+                    <li><strong>I have</strong> one sister. / I have two brothers.</li>
+                    <li><strong>I don't have</strong> any sisters. / I don't have a big sister.</li>
+                    <li><em>Question:</em> How many sisters do you have?</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h3>Part B: Family Members Vocabulary</h3>
+                <p>Key words to describe our relatives: mother, father, sister, brother, baby sister, baby brother, grandmother, grandfather, family, big, small.</p>
+            </div>
+
+            <div class="card">
+                <h3>Part C: "He / She" and Questions with "Who's" (Grammar 2)</h3>
+                <p>We use special pronouns and question structures to identify family members in photographs or real life:</p>
+                <ul style="margin-left: 20px; line-height: 1.6;">
+                    <li><strong>Who's</strong> = Who is (Who's he? / Who's she?)</li>
+                    <li><strong>He's</strong> my brother Jack. (He is = He's)</li>
+                    <li><strong>She's</strong> my sister Ana. (She is = She's)</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- TAB 2: EXAMPLES -->
+        <div id="examples" class="tab-pane">
+            <h2 class="section-title">Resolved Examples</h2>
+            <p class="section-intro">Review these models based on Our World 1 to understand how to apply the grammar rules.</p>
+
+            <!-- Basic Examples -->
+            <span class="level-badge">Basic Level Examples</span>
+            <div class="card">
+                <h3>Example 1: Affirmative "To Have"</h3>
+                <p><strong>Input:</strong> Complete: "I have two _______." (brothers)</p>
+                <button class="toggle-solution-btn" onclick="toggleSolution(this)">Show Solution</button>
+                <div class="solution-box"><strong>Solution:</strong> I have two <u>brothers</u>. (Refers to male siblings).</div>
+            </div>
+
+            <div class="card">
+                <h3>Example 2: Negative "To Have"</h3>
+                <p><strong>Input:</strong> Fill in the blank: "I _______ have any brothers." (don't / do)</p>
+                <button class="toggle-solution-btn" onclick="toggleSolution(this)">Show Solution</button>
+                <div class="solution-box"><strong>Solution:</strong> I <u>don't</u> have any brothers. ("don't" means do not).</div>
+            </div>
+
+            <div class="card">
+                <h3>Example 3: Baby family member</h3>
+                <p><strong>Input:</strong> Complete: "One. I have a baby _______." (sister)</p>
+                <button class="toggle-solution-btn" onclick="toggleSolution(this)">Show Solution</button>
+                <div class="solution-box"><strong>Solution:</strong> One. I have a baby <u>sister</u>.</div>
+            </div>
+
+            <div class="card">
+                <h3>Example 4: Identifying with She's</h3>
+                <p><strong>Input:</strong> Look at photo 1: "She's my _______." (sister)</p>
+                <button class="toggle-solution-btn" onclick="toggleSolution(this)">Show Solution</button>
+                <div class="solution-box"><strong>Solution:</strong> She's my <u>sister</u>.</div>
+            </div>
+
+            <div class="card">
+                <h3>Example 5: Identifying with He's</h3>
+                <p><strong>Input:</strong> Look at photo: "He's my _______." (grandfather)</p>
+                <button class="toggle-solution-btn" onclick="toggleSolution(this)">Show Solution</button>
+                <div class="solution-box"><strong>Solution:</strong> He's my <u>grandfather</u>.</div>
+            </div>
+
+            <!-- Intermediate Examples -->
+            <span class="level-badge" style="margin-top: 15px; display:inline-block;">Intermediate Level Examples</span>
+            <div class="card">
+                <h3>Example 6: Describing Lisa's family</h3>
+                <p><strong>Input:</strong> Complete: "Hi, I'm Lisa. I have a big _______." (family)</p>
+                <button class="toggle-solution-btn" onclick="toggleSolution(this)">Show Solution</button>
+                <div class="solution-box"><strong>Solution:</strong> Hi, I'm Lisa. I have a big <u>family</u>.</div>
+            </div>
+
+            <div class="card">
+                <h3>Example 7: Complex sentence with big/little</h3>
+                <p><strong>Input:</strong> Complete: "I have a little _______." (brother)</p>
+                <button class="toggle-solution-btn" onclick="toggleSolution(this)">Show Solution</button>
+                <div class="solution-box"><strong>Solution:</strong> I have a little <u>brother</u>.</div>
+            </div>
+
+            <div class="card">
+                <h3>Example 8: Combining brother and sister</h3>
+                <p><strong>Input:</strong> Complete: "And I have a _______ sister, too!" (baby)</p>
+                <button class="toggle-solution-btn" onclick="toggleSolution(this)">Show Solution</button>
+                <div class="solution-box"><strong>Solution:</strong> And I have a <u>baby</u> sister, too!</div>
+            </div>
+
+            <div class="card">
+                <h3>Example 9: Who's question contraction</h3>
+                <p><strong>Input:</strong> What does "Who's" mean?</p>
+                <button class="toggle-solution-btn" onclick="toggleSolution(this)">Show Solution</button>
+                <div class="solution-box"><strong>Solution:</strong> "Who's" means "Who is".</div>
+            </div>
+
+            <div class="card">
+                <h3>Example 10: Describing grandmother and brother</h3>
+                <p><strong>Input:</strong> Complete: "She's my grandmother, and he's my _______." (brother)</p>
+                <button class="toggle-solution-btn" onclick="toggleSolution(this)">Show Solution</button>
+                <div class="solution-box"><strong>Solution:</strong> She's my grandmother, and he's my <u>brother</u>.</div>
+            </div>
+
+            <!-- Advanced Examples -->
+            <span class="level-badge" style="margin-top: 15px; display:inline-block;">Advanced Level Examples</span>
+            <div class="card">
+                <h3>Example 11: Miguel's family analysis</h3>
+                <p><strong>Input:</strong> Based on Miguel's family web (Mother: Juana, Father: Angel, 2 brothers: Pablo, Luis, 1 sister: Rosa, 1 baby sister: Lola): Answer: "Is Miguel's family big or small?"</p>
+                <button class="toggle-solution-btn" onclick="toggleSolution(this)">Show Solution</button>
+                <div class="solution-box"><strong>Solution:</strong> It is big! (Because he has many family members).</div>
+            </div>
+
+            <div class="card">
+                <h3>Example 12: Counting brothers from web</h3>
+                <p><strong>Input:</strong> "How many brothers does Miguel have?"</p>
+                <button class="toggle-solution-btn" onclick="toggleSolution(this)">Show Solution</button>
+                <div class="solution-box"><strong>Solution:</strong> He has 2 brothers (Pablo and Luis).</div>
+            </div>
+
+            <div class="card">
+                <h3>Example 13: Counting sisters from web</h3>
+                <p><strong>Input:</strong> "How many sisters does Miguel have?"</p>
+                <button class="toggle-solution-btn" onclick="toggleSolution(this)">Show Solution</button>
+                <div class="solution-box"><strong>Solution:</strong> He has 2 sisters (Rosa and Lola the baby sister).</div>
+            </div>
+
+            <div class="card">
+                <h3>Example 14: Personalizing "To have" response</h3>
+                <p><strong>Input:</strong> Complete for yourself: "How many sisters do you have? I _______."</p>
+                <button class="toggle-solution-btn" onclick="toggleSolution(this)">Show Solution</button>
+                <div class="solution-box"><strong>Solution:</strong> Example: "I have one sister." or "I don't have any sisters."</div>
+            </div>
+
+            <div class="card">
+                <h3>Example 15: Identifying multiple relations</h3>
+                <p><strong>Input:</strong> "She's my mother, and he's my father. Together they are my _______."</p>
+                <button class="toggle-solution-btn" onclick="toggleSolution(this)">Show Solution</button>
+                <div class="solution-box"><strong>Solution:</strong> Together they are my <u>parents</u> / or part of my <u>family</u>.</div>
+            </div>
+        </div>
+
+        <!-- TAB 3: EXERCISES -->
+        <div id="exercises" class="tab-pane">
+            <h2 class="section-title">Practice Exercises</h2>
+            <p class="section-intro">Try solving these exercises. Click "Show Solution" to check your answers!</p>
+
+            <!-- Basic Exercises -->
+            <span class="level-badge">Basic Level Exercises</span>
+            <div class="card">
+                <h3>Exercise 1</h3>
+                <p>Complete the sentence: "I _______ two brothers." (have / don't have)</p>
+                <button class="toggle-solution-btn" onclick="toggleSolution(this)">Show Solution</button>
+                <div class="solution-box"><strong>Solution:</strong> have (I have two brothers.)</div>
+            </div>
+
+            <div class="card">
+                <h3>Exercise 2</h3>
+                <p>Complete the sentence: "I _______ have any sisters." (don't / do)</p>
+                <button class="toggle-solution-btn" onclick="toggleSolution(this)">Show Solution</button>
+                <div class="solution-box"><strong>Solution:</strong> don't (I don't have any sisters.)</div>
+            </div>
+
+            <div class="card">
+                <h3>Exercise 3</h3>
+                <p>Choose the word: "My mother's mother is my _______." (grandmother / grandfather)</p>
+                <button class="toggle-solution-btn" onclick="toggleSolution(this)">Show Solution</button>
+                <div class="solution-box"><strong>Solution:</strong> grandmother</div>
+            </div>
+
+            <div class="card">
+                <h3>Exercise 4</h3>
+                <p>Identify: "_______ he?" -> "He's my brother." (Who's / What's)</p>
+                <button class="toggle-solution-btn" onclick="toggleSolution(this)">Show Solution</button>
+                <div class="solution-box"><strong>Solution:</strong> Who's</div>
+            </div>
+
+            <div class="card">
+                <h3>Exercise 5</h3>
+                <p>Choose the pronoun for a girl: "_______ my sister Ana." (He's / She's)</p>
+                <button class="toggle-solution-btn" onclick="toggleSolution(this)">Show Solution</button>
+                <div class="solution-box"><strong>Solution:</strong> She's</div>
+            </div>
+
+            <!-- Intermediate Exercises -->
+            <span class="level-badge" style="margin-top: 15px; display:inline-block;">Intermediate Level Exercises</span>
+            <div class="card">
+                <h3>Exercise 6</h3>
+                <p>Fill in the blank using the word bank (baby, big, brother, family, sister): "Hi, I'm Lisa. I have a _______ family."</p>
+                <button class="toggle-solution-btn" onclick="toggleSolution(this)">Show Solution</button>
+                <div class="solution-box"><strong>Solution:</strong> big</div>
+            </div>
+
+            <div class="card">
+                <h3>Exercise 7</h3>
+                <p>Fill in the blank: "I have a little _______." (brother / sister)</p>
+                <button class="toggle-solution-btn" onclick="toggleSolution(this)">Show Solution</button>
+                <div class="solution-box"><strong>Solution:</strong> brother (or sister, depending on picture context).</div>
+            </div>
+
+            <div class="card">
+                <h3>Exercise 8</h3>
+                <p>Match & Write: "She's my grandmother, and he's my _______." (grandfather)</p>
+                <button class="toggle-solution-btn" onclick="toggleSolution(this)">Show Solution</button>
+                <div class="solution-box"><strong>Solution:</strong> grandfather</div>
+            </div>
+
+            <div class="card">
+                <h3>Exercise 9</h3>
+                <p>Complete: "And I have a baby _______, too!" (sister)</p>
+                <button class="toggle-solution-btn" onclick="toggleSolution(this)">Show Solution</button>
+                <div class="solution-box"><strong>Solution:</strong> sister</div>
+            </div>
+
+            <div class="card">
+                <h3>Exercise 10</h3>
+                <p>Unscramble: "my / He's / brother / Jack ."</p>
+                <button class="toggle-solution-btn" onclick="toggleSolution(this)">Show Solution</button>
+                <div class="solution-box"><strong>Solution:</strong> He's my brother Jack.</div>
+            </div>
+
+            <!-- Advanced Exercises -->
+            <span class="level-badge" style="margin-top: 15px; display:inline-block;">Advanced Level Exercises</span>
+            <div class="card">
+                <h3>Exercise 11</h3>
+                <p>Based on a family web where Angel is father and Juana is mother: "Who is Juana to Angel?"</p>
+                <button class="toggle-solution-btn" onclick="toggleSolution(this)">Show Solution</button>
+                <div class="solution-box"><strong>Solution:</strong> She's his wife / mother.</div>
+            </div>
+
+            <div class="card">
+                <h3>Exercise 12</h3>
+                <p>Write a complete sentence about yourself: How many brothers do you have? Use "I have...".</p>
+                <button class="toggle-solution-btn" onclick="toggleSolution(this)">Show Solution</button>
+                <div class="solution-box"><strong>Solution:</strong> Example: "I have one brother." or "I don't have any brothers."</div>
+            </div>
+
+            <div class="card">
+                <h3>Exercise 13</h3>
+                <p>Complete with the correct contraction: "He is my brother" becomes "_______ my brother."</p>
+                <button class="toggle-solution-btn" onclick="toggleSolution(this)">Show Solution</button>
+                <div class="solution-box"><strong>Solution:</strong> He's</div>
+            </div>
+
+            <div class="card">
+                <h3>Exercise 14</h3>
+                <p>Analyze and answer: If a family has a mother, father, 2 brothers, and 1 baby sister, is it big or small?</p>
+                <button class="toggle-solution-btn" onclick="toggleSolution(this)">Show Solution</button>
+                <div class="solution-box"><strong>Solution:</strong> It is big.</div>
+            </div>
+
+            <div class="card">
+                <h3>Exercise 15</h3>
+                <p>Create a sentence identifying a male relative in a photo using "He's".</p>
+                <button class="toggle-solution-btn" onclick="toggleSolution(this)">Show Solution</button>
+                <div class="solution-box"><strong>Solution:</strong> Example: "He's my father." or "He's my grandfather."</div>
+            </div>
+        </div>
+
+        <!-- TAB 4: REFLECTION -->
+        <div id="reflection" class="tab-pane">
+            <h2 class="section-title">Critical Reflection Questions</h2>
+            <p class="section-intro">Think about these questions with your teacher or classmates to deepen your understanding!</p>
+
+            <div class="card">
+                <h3>Question 1</h3>
+                <p>Why is it important to know how to describe our family members in English?</p>
+                <button class="toggle-solution-btn" onclick="toggleSolution(this)">Show Guidance</button>
+                <div class="solution-box"><strong>Guidance:</strong> It helps us share who we love, talk about people who live with us, and introduce our family to new friends!</div>
+            </div>
+
+            <div class="card">
+                <h3>Question 2</h3>
+                <p>What is the difference between saying "I have a sister" and "I don't have any sisters"?</p>
+                <button class="toggle-solution-btn" onclick="toggleSolution(this)">Show Guidance</button>
+                <div class="solution-box"><strong>Guidance:</strong> "I have" means you possess that family member, while "I don't have" means zero sisters.</div>
+            </div>
+
+            <div class="card">
+                <h3>Question 3</h3>
+                <p>When do we use "He's" instead of "She's" when talking about family?</p>
+                <button class="toggle-solution-btn" onclick="toggleSolution(this)">Show Guidance</button>
+                <div class="solution-box"><strong>Guidance:</strong> We use "He's" for males (like brothers, fathers, grandfathers) and "She's" for females (like sisters, mothers, grandmothers).</div>
+            </div>
+        </div>
+
+        <!-- TAB 5: EVALUATION -->
+        <div id="evaluation" class="tab-pane">
+            <h2 class="section-title">Formative Evaluation</h2>
+            <p class="section-intro">Test what you learned from Unit 3. Check the hidden solutions when you finish!</p>
+
+            <div class="card">
+                <h3>Test Question 1</h3>
+                <p>Complete: "I _______ a baby sister." (have / has)</p>
+                <button class="toggle-solution-btn" onclick="toggleSolution(this)">Show Solution</button>
+                <div class="solution-box"><strong>Solution:</strong> have (I have a baby sister.)</div>
+            </div>
+
+            <div class="card">
+                <h3>Test Question 2</h3>
+                <p>Complete: "Who's she?" -> "_______ my grandmother Ana." (He's / She's)</p>
+                <button class="toggle-solution-btn" onclick="toggleSolution(this)">Show Solution</button>
+                <div class="solution-box"><strong>Solution:</strong> She's</div>
+            </div>
+
+            <div class="card">
+                <h3>Test Question 3</h3>
+                <p>Choose the correct negative form: "I _______ have a big sister." (don't / doesn't)</p>
+                <button class="toggle-solution-btn" onclick="toggleSolution(this)">Show Solution</button>
+                <div class="solution-box"><strong>Solution:</strong> don't</div>
+            </div>
+
+            <div class="card">
+                <h3>Test Question 4</h3>
+                <p>What word goes here? "Hi, I'm Lisa. I have a big _______." (family)</p>
+                <button class="toggle-solution-btn" onclick="toggleSolution(this)">Show Solution</button>
+                <div class="solution-box"><strong>Solution:</strong> family</div>
+            </div>
+
+            <div class="card">
+                <h3>Test Question 5</h3>
+                <p>If someone asks "How many brothers do you have?", how do you start your answer using "I"?</p>
+                <button class="toggle-solution-btn" onclick="toggleSolution(this)">Show Solution</button>
+                <div class="solution-box"><strong>Solution:</strong> "I have..." or "I don't have..."</div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    // Tab switching logic
+    function switchTab(evt, tabName) {
+        const panes = document.getElementsByClassName("tab-pane");
+        for (let i = 0; i < panes.length; i++) {
+            panes[i].classList.remove("active");
+        }
+
+        const buttons = document.getElementsByClassName("tab-btn");
+        for (let i = 0; i < buttons.length; i++) {
+            buttons[i].classList.remove("active");
+        }
+
+        document.getElementById(tabName).classList.add("active");
+        evt.currentTarget.classList.add("active");
+    }
+
+    // Toggle solution visibility
+    function toggleSolution(button) {
+        const solutionBox = button.nextElementSibling;
+        if (solutionBox.classList.contains("show")) {
+            solutionBox.classList.remove("show");
+            button.textContent = "Show Solution";
+        } else {
+            solutionBox.classList.add("show");
+            button.textContent = "Hide Solution";
+        }
+    }
+
+    // Fullscreen API toggle
+    function toggleFullScreen() {
+        const elem = document.getElementById("boardContainer");
+        if (!document.fullscreenElement) {
+            if (elem.requestFullscreen) {
+                elem.requestFullscreen();
+            } else if (elem.webkitRequestFullscreen) { /* Safari */
+                elem.webkitRequestFullscreen();
+            } else if (elem.msRequestFullscreen) { /* IE11 */
+                elem.msRequestFullscreen();
+            }
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) { /* Safari */
+                document.webkitExitFullscreen();
+            } else if (document.msExitFullscreen) { /* IE11 */
+                document.msExitFullscreen();
+            }
+        }
+    }
+</script>
+
+</body>
+</html>
